@@ -8,6 +8,11 @@ YELLOW='\033[0;33m'
 RESET='\033[0m'
 BOLD='\033[1m'
 
+# Backup folder
+PATH_BACKUP_FOLDER="/mnt/user/backups/vm-backups"
+PATH_BACKUP_FOLDER_LEN=`echo $PATH_BACKUP_FOLDER |awk '{print length}'`
+PATH_BACKUP_FOLDER_LEN=$((PATH_BACKUP_FOLDER_LEN+2))
+
 check_yes() {
 	while true; do
 		read -r -p "Are You Sure? [Y/n] " input
@@ -36,6 +41,7 @@ print_separator() {
 }
 
 get_informations() {
+	clear
 	print_separator
 	printf "${RED}Make sure the informations is correct this script does not check errors.${RESET}\n\n"
 	printf "${RED}Please check this before continuing.${RESET}\n" sur le dashboard
@@ -46,34 +52,40 @@ get_informations() {
 	print_separator
 	printf "\n"
 
-	printf "${BOLD}Enter path of virtual machine backup folder, for eg:${RESET}\n"
-	printf "/mnt/user/John-Doe/my_backup_folder\n"
-	printf "...\n"
-	printf "\nPath without the last / like this: \n"
-	printf "${BLUE}/mnt/user/PATH_BACKUP_FOLDER${RESET}\n\n"
-	read -p "Path of backup folder: " PATH_BACKUP_FOLDER
+	printf "List of vm folders\n" 
+	if [ -d $PATH_BACKUP_FOLDER ]; then
+		for d in $PATH_BACKUP_FOLDER/*/ ; do
+			if [[ $d != *"logs"* && $d != *"Unraid-VM-Backup-Plugin-Restoration-Script"* ]]; then
+				DV=`echo "$d" | cut -c$PATH_BACKUP_FOLDER_LEN- | rev | cut -c2- | rev`
+			    	printf "${BLUE}$DV ${RESET}\n"
+				DV=""
+			fi
+		done
+	fi
 
 	print_separator
-	printf "\n"
-	printf "${BOLD}Enter name of virtual machine, like:${RESET}\n"
-	printf "${GREEN}Ubuntu${RESET}\n"
-	printf "\n"
+	printf "\n${BOLD}Enter name of virtual machine${RESET}\n\n"
 	read -p "Name of vm folder: " VM_NAME
+	PATH_BACKUP_VM_FOLDER=$PATH_BACKUP_FOLDER/$VM_NAME
+	PATH_BACKUP_VM_FOLDER_LEN=`echo $PATH_BACKUP_VM_FOLDER |awk '{print length}'`
+	PATH_BACKUP_VM_FOLDER_LEN=$((PATH_BACKUP_VM_FOLDER_LEN+1))
 
 	print_separator
-	printf "\n"
-	printf "${BOLD}Enter date of backup, for eg:${RESET}\n"
-	printf "20220124_0200_$VM_NAME.xml\n"
-	printf "20220124_0200_vdisk1.img or .zst\n"
-	printf "...\n"
-	printf "\nDate like this: \n"
-	printf "${YELLOW}20220124_0200${RESET}\n\n"
+	printf "\nList of backups for $VM_NAME at $PATH_BACKUP_VM_FOLDER\n" 
+	if [ -d $PATH_BACKUP_VM_FOLDER ]; then
+		for d in $(ls -r $PATH_BACKUP_VM_FOLDER/*img*); do
+			DV=`echo "${d:$PATH_BACKUP_VM_FOLDER_LEN:13}"`
+		    	printf "${BLUE}$DV ${RESET}\n"
+
+#			echo "${d:$PATH_BACKUP_VM_FOLDER_LEN:13}" 
+		done
+	fi
+
+	printf "\n${BOLD}Enter date of backup${RESET}\n\n"
 	read -p "Date of backup: " BACKUP_DATE
-	printf "\n"
 
 	print_separator
-	printf "\n"
-	printf "${BOLD}Checking information :${RESET}\n"
+	printf "\n${BOLD}Checking information :${RESET}\n"
 	printf "Your backup path is: ${BLUE}$PATH_BACKUP_FOLDER${RESET}\n"
 	printf "Your vm name is: ${GREEN}$VM_NAME${RESET}\n"
 	printf "Your backup date is: ${YELLOW}$BACKUP_DATE${RESET}\n\n"
