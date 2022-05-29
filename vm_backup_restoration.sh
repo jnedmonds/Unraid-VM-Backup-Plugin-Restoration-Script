@@ -76,8 +76,6 @@ get_informations() {
 		for d in $(ls -r $PATH_BACKUP_VM_FOLDER/*img*); do
 			DV=`echo "${d:$PATH_BACKUP_VM_FOLDER_LEN:13}"`
 		    	printf "${BLUE}$DV ${RESET}\n"
-
-#			echo "${d:$PATH_BACKUP_VM_FOLDER_LEN:13}" 
 		done
 	fi
 
